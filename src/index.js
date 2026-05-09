@@ -1,5 +1,9 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import miaAudioUrl from "./mia.mp3";
+import catAudioUrl from "./cat.mp3";
+import catModelUrl from "./oiiaioooooiai_cat.glb";
+import heartModelUrl from "./heart_in_love.glb";
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -46,7 +50,7 @@ const music2 = new THREE.Audio(listener); // Second music track
 
 // Load first track (music to play on page load)
 audioLoader.load(
-  "./mia.mp3", // Replace with your own file path
+  miaAudioUrl,
   function (buffer) {
     music1.setBuffer(buffer);
     music1.setLoop(true); // Optionally loop the sound
@@ -61,7 +65,7 @@ audioLoader.load(
 
 // Load second track (music to play when the button is clicked)
 audioLoader.load(
-  "./cat.mp3", // Replace with your own file path
+  catAudioUrl,
   function (buffer) {
     music2.setBuffer(buffer);
     music2.setLoop(true);
@@ -76,7 +80,7 @@ audioLoader.load(
 // Load GLTF model (cat)
 const loader = new GLTFLoader();
 loader.load(
-  "./oiiaioooooiai_cat.glb",
+  catModelUrl,
   function (gltf) {
     const model = gltf.scene;
     model.scale.set(4, 4, 4); // Slightly bigger for mobile
@@ -102,7 +106,7 @@ const hearts = []; // Array to store heart instances
 // Function to create and animate a heart
 function createHeart() {
   heartLoader.load(
-    "./heart_in_love.glb", // Path to your heart model
+    heartModelUrl,
     function (gltf) {
       const heart = gltf.scene;
 
