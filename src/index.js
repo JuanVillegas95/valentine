@@ -47,15 +47,85 @@ camera.add(listener);
 const audioLoader = new THREE.AudioLoader();
 const music1 = new THREE.Audio(listener); // First music track
 const music2 = new THREE.Audio(listener); // Second music track
+let isVisitMusicReady = false;
+let isCatMusicReady = false;
+let playVisitMusicWhenReady = false;
+let playCatMusicWhenReady = false;
+let musicButton;
 
-// Load first track (music to play on page load)
+function updateMusicButton(text, disabled = false) {
+  if (!musicButton) return;
+
+  musicButton.innerText = text;
+  musicButton.disabled = disabled;
+  musicButton.style.opacity = disabled ? "0.75" : "1";
+}
+
+async function resumeAudioContext() {
+  if (listener.context.state === "suspended") {
+    await listener.context.resume();
+  }
+}
+
+async function playVisitMusic() {
+  playVisitMusicWhenReady = true;
+  await resumeAudioContext();
+
+  if (!isVisitMusicReady) {
+    updateMusicButton("Loading music...", true);
+    return;
+  }
+
+  if (music2.isPlaying) {
+    music2.stop();
+  }
+
+  if (!music1.isPlaying) {
+    music1.play();
+  }
+
+  updateMusicButton("Pause music");
+}
+
+function toggleVisitMusic() {
+  if (music1.isPlaying) {
+    music1.stop();
+    updateMusicButton("Play music");
+    return;
+  }
+
+  playVisitMusic();
+}
+
+async function playCatMusic() {
+  playCatMusicWhenReady = true;
+  await resumeAudioContext();
+
+  if (!isCatMusicReady) return;
+
+  if (music1.isPlaying) {
+    music1.stop();
+    updateMusicButton("Play music");
+  }
+
+  if (!music2.isPlaying) {
+    music2.play();
+  }
+}
+
+// Load first track, then wait for a user click before playing it.
 audioLoader.load(
   miaAudioUrl,
   function (buffer) {
     music1.setBuffer(buffer);
     music1.setLoop(true); // Optionally loop the sound
     music1.setVolume(0.5); // Set volume (0.0 to 1.0)
-    music1.play(); // Automatically play when the page loads
+    isVisitMusicReady = true;
+    updateMusicButton("Play music");
+
+    if (playVisitMusicWhenReady) {
+      playVisitMusic();
+    }
   },
   undefined,
   function (error) {
@@ -70,6 +140,11 @@ audioLoader.load(
     music2.setBuffer(buffer);
     music2.setLoop(true);
     music2.setVolume(0.5);
+    isCatMusicReady = true;
+
+    if (playCatMusicWhenReady) {
+      playCatMusic();
+    }
   },
   undefined,
   function (error) {
@@ -176,6 +251,29 @@ textElement.style.textAlign = "center";
 textElement.style.zIndex = "10"; // Ensure it's on top
 document.body.appendChild(textElement);
 
+musicButton = document.createElement("button");
+musicButton.innerText = "Loading music...";
+musicButton.disabled = true;
+musicButton.style.position = "absolute";
+musicButton.style.bottom = "20%";
+musicButton.style.left = "50%";
+musicButton.style.transform = "translateX(-50%)";
+musicButton.style.padding = "12px 20px";
+musicButton.style.fontSize = "16px";
+musicButton.style.cursor = "pointer";
+musicButton.style.backgroundColor = "#ffffff";
+musicButton.style.color = "#ff1493";
+musicButton.style.border = "none";
+musicButton.style.borderRadius = "12px";
+musicButton.style.boxShadow = "0px 5px 8px rgba(0, 0, 0, 0.3)";
+musicButton.style.fontWeight = "bold";
+musicButton.style.textAlign = "center";
+musicButton.style.zIndex = "10";
+musicButton.style.opacity = "0.75";
+document.body.appendChild(musicButton);
+
+musicButton.addEventListener("click", toggleVisitMusic);
+
 // Create a button to play the animation
 const button = document.createElement("button");
 button.innerText = "Yes"; // Changed button text to "Yes"
@@ -202,12 +300,5 @@ button.addEventListener("click", () => {
     action.reset().play();
   }
 
-  // Switch music on button click
-  if (music1.isPlaying) {
-    music1.stop();
-    music2.play(); // Play second music
-  } else {
-    music2.stop();
-    music1.play(); // Play first music
-  }
+  playCatMusic();
 });
